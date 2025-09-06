@@ -1,0 +1,286 @@
+version: "2.0"
+
+services:
+  postgres:
+    image: postgres:15
+    env:
+      - POSTGRES_DB=dashboard_db
+      - POSTGRES_USER=dashboard_user
+      - POSTGRES_PASSWORD=dashboard_pass
+    expose:
+      - port: 5432
+        as: 80
+        to:
+          - global: true
+
+  redis:
+    image: redis:7-alpine
+    expose:
+      - port: 6379
+        as: 80
+        to:
+          - global: true
+
+  news-service:
+    image: personalized-dashboard/news-service:latest
+    env:
+      - DATABASE_URL=postgres://dashboard_user:dashboard_pass@postgres:5432/dashboard_db?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - NEWS_API_KEY=${NEWS_API_KEY}
+    expose:
+      - port: 8000
+        as: 80
+        to:
+          - global: true
+
+  jobs-service:
+    image: personalized-dashboard/jobs-service:latest
+    env:
+      - DATABASE_URL=postgres://dashboard_user:dashboard_pass@postgres:5432/dashboard_db?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - LINKEDIN_API_KEY=${LINKEDIN_API_KEY}
+    expose:
+      - port: 8000
+        as: 80
+        to:
+          - global: true
+
+  videos-service:
+    image: personalized-dashboard/videos-service:latest
+    env:
+      - DATABASE_URL=postgres://dashboard_user:dashboard_pass@postgres:5432/dashboard_db?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
+    expose:
+      - port: 8000
+        as: 80
+        to:
+          - global: true
+
+  deals-service:
+    image: personalized-dashboard/deals-service:latest
+    env:
+      - DATABASE_URL=postgres://dashboard_user:dashboard_pass@postgres:5432/dashboard_db?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - AMAZON_API_KEY=${AMAZON_API_KEY}
+      - FLIPKART_API_KEY=${FLIPKART_API_KEY}
+    expose:
+      - port: 8000
+        as: 80
+        to:
+          - global: true
+
+  recommendation-service:
+    image: personalized-dashboard/recommendation-service:latest
+    env:
+      - DATABASE_URL=postgres://dashboard_user:dashboard_pass@postgres:5432/dashboard_db?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - WOLFRAM_API_KEY=${WOLFRAM_API_KEY}
+    expose:
+      - port: 8000
+        as: 80
+        to:
+          - global: true
+
+  user-service:
+    image: personalized-dashboard/user-service:latest
+    env:
+      - DATABASE_URL=postgres://dashboard_user:dashboard_pass@postgres:5432/dashboard_db?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+    expose:
+      - port: 8000
+        as: 80
+        to:
+          - global: true
+
+  nft-service:
+    image: personalized-dashboard/nft-service:latest
+    env:
+      - DATABASE_URL=postgres://dashboard_user:dashboard_pass@postgres:5432/dashboard_db?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - VERBWIRE_API_KEY=${VERBWIRE_API_KEY}
+    expose:
+      - port: 8000
+        as: 80
+        to:
+          - global: true
+
+  api-gateway:
+    image: personalized-dashboard/api-gateway:latest
+    env:
+      - NEWS_SERVICE_URL=http://news-service:8000
+      - JOBS_SERVICE_URL=http://jobs-service:8000
+      - VIDEOS_SERVICE_URL=http://videos-service:8000
+      - DEALS_SERVICE_URL=http://deals-service:8000
+      - RECOMMENDATION_SERVICE_URL=http://recommendation-service:8000
+      - USER_SERVICE_URL=http://user-service:8000
+      - NFT_SERVICE_URL=http://nft-service:8000
+    expose:
+      - port: 8080
+        as: 80
+        to:
+          - global: true
+
+profiles:
+  compute:
+    postgres:
+      resources:
+        cpu:
+          units: 0.1
+        memory:
+          size: 512Mi
+        storage:
+          size: 1Gi
+    redis:
+      resources:
+        cpu:
+          units: 0.1
+        memory:
+          size: 256Mi
+        storage:
+          size: 512Mi
+    news-service:
+      resources:
+        cpu:
+          units: 0.1
+        memory:
+          size: 256Mi
+        storage:
+          size: 512Mi
+    jobs-service:
+      resources:
+        cpu:
+          units: 0.1
+        memory:
+          size: 256Mi
+        storage:
+          size: 512Mi
+    videos-service:
+      resources:
+        cpu:
+          units: 0.1
+        memory:
+          size: 256Mi
+        storage:
+          size: 512Mi
+    deals-service:
+      resources:
+        cpu:
+          units: 0.1
+        memory:
+          size: 256Mi
+        storage:
+          size: 512Mi
+    recommendation-service:
+      resources:
+        cpu:
+          units: 0.2
+        memory:
+          size: 512Mi
+        storage:
+          size: 1Gi
+    user-service:
+      resources:
+        cpu:
+          units: 0.1
+        memory:
+          size: 256Mi
+        storage:
+          size: 512Mi
+    nft-service:
+      resources:
+        cpu:
+          units: 0.1
+        memory:
+          size: 256Mi
+        storage:
+          size: 512Mi
+    api-gateway:
+      resources:
+        cpu:
+          units: 0.1
+        memory:
+          size: 256Mi
+        storage:
+          size: 512Mi
+
+  placement:
+    akash:
+      attributes:
+        host: akash
+      signedBy:
+        anyOf:
+          - "akash1365yvmc4s7awdyj3n2sav7xfx92adk3fnpgygx"
+      pricing:
+        postgres:
+          denom: uakt
+          amount: 1000
+        redis:
+          denom: uakt
+          amount: 500
+        news-service:
+          denom: uakt
+          amount: 500
+        jobs-service:
+          denom: uakt
+          amount: 500
+        videos-service:
+          denom: uakt
+          amount: 500
+        deals-service:
+          denom: uakt
+          amount: 500
+        recommendation-service:
+          denom: uakt
+          amount: 1000
+        user-service:
+          denom: uakt
+          amount: 500
+        nft-service:
+          denom: uakt
+          amount: 500
+        api-gateway:
+          denom: uakt
+          amount: 500
+
+deployment:
+  postgres:
+    akash:
+      profile: postgres
+      count: 1
+  redis:
+    akash:
+      profile: redis
+      count: 1
+  news-service:
+    akash:
+      profile: news-service
+      count: 1
+  jobs-service:
+    akash:
+      profile: jobs-service
+      count: 1
+  videos-service:
+    akash:
+      profile: videos-service
+      count: 1
+  deals-service:
+    akash:
+      profile: deals-service
+      count: 1
+  recommendation-service:
+    akash:
+      profile: recommendation-service
+      count: 1
+  user-service:
+    akash:
+      profile: user-service
+      count: 1
+  nft-service:
+    akash:
+      profile: nft-service
+      count: 1
+  api-gateway:
+    akash:
+      profile: api-gateway
+      count: 1
